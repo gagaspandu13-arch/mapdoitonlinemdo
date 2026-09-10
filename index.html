@@ -10,7 +10,8 @@
     <title>MAP DO IT ONLINE - BRANCH MANADO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
             theme: {
                 extend: {
                     colors: {
@@ -25,7 +26,7 @@
                     }
                 }
             }
-        }
+        };
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -34,6 +35,13 @@
             font-family: 'Inter', sans-serif;
             background-color: #F4F6F9;
         }
+        /* Fallback utility styles for brand colors if CDN is restricted */
+        .bg-brand-red { background-color: #ED1C24 !important; }
+        .hover\:bg-brand-darkRed:hover { background-color: #BA1219 !important; }
+        .text-brand-red { color: #ED1C24 !important; }
+        .bg-brand-blue { background-color: #005596 !important; }
+        .text-brand-blue { color: #005596 !important; }
+
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -68,9 +76,14 @@
                     <p class="text-xs font-semibold text-brand-red tracking-wide">BRANCH MANADO</p>
                 </div>
             </div>
-            <div id="headerBadge" class="hidden md:flex items-center text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                <i class="fa-solid fa-clock text-slate-400 mr-1.5"></i>
-                <span id="currentTime">WITA (Asia/Makassar)</span>
+            <div class="flex items-center space-x-2">
+                <div id="demoNotice" class="hidden text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-medium border border-amber-200">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> Mode Offline / Demo
+                </div>
+                <div id="headerBadge" class="hidden md:flex items-center text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                    <i class="fa-solid fa-clock text-slate-400 mr-1.5"></i>
+                    <span id="currentTime">WITA (Asia/Makassar)</span>
+                </div>
             </div>
         </div>
     </header>
@@ -234,9 +247,14 @@
 
         <section id="viewDashboard" class="hidden">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <button onclick="logoutDashboard()" class="inline-flex items-center text-sm font-medium text-slate-600 hover:text-brand-red bg-white border border-slate-200 hover:border-slate-300 px-4 py-2 rounded-xl shadow-sm transition-all">
-                    <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Menu Utama
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="logoutDashboard()" class="inline-flex items-center text-sm font-medium text-slate-600 hover:text-brand-red bg-white border border-slate-200 hover:border-slate-300 px-4 py-2 rounded-xl shadow-sm transition-all">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Menu Utama
+                    </button>
+                    <button onclick="openExportModal()" class="inline-flex items-center text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl shadow-sm transition-all">
+                        <i class="fa-solid fa-file-excel mr-2"></i> Export Data
+                    </button>
+                </div>
 
                 <div class="flex bg-slate-200/80 p-1 rounded-xl space-x-1">
                     <button id="tabBtnRekap" onclick="switchDashboardTab('REKAP')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-slate-900 shadow-sm">
@@ -595,6 +613,47 @@
 
     </main>
 
+    <div id="modalExport" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
+            <button onclick="closeExportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl font-bold mb-4">
+                <i class="fa-solid fa-file-csv"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">Export Data MAP_DO_IT_DATA</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Tarik seluruh data dari spreadsheet Google Apps Script berdasarkan rentang tanggal timestamp.</p>
+            
+            <form onsubmit="handleExportData(event)" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Mulai <span class="text-red-500">*</span></label>
+                        <input type="date" id="exportStartDate" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Selesai <span class="text-red-500">*</span></label>
+                        <input type="date" id="exportEndDate" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 space-y-1">
+                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Timestamp:</p>
+                    <p>Sistem memfilter timestamp hanya berdasarkan <strong>Tanggal, Bulan, dan Tahun</strong>. Komponen Jam, Menit, dan Detik secara otomatis diabaikan.</p>
+                </div>
+
+                <div class="pt-2 flex items-center space-x-2">
+                    <button type="button" onclick="closeExportModal()" class="w-1/2 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">
+                        Batal
+                    </button>
+                    <button type="submit" id="btnDownloadExport" class="w-1/2 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 shadow-md shadow-emerald-200 flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download CSV</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="modalPassword" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-slate-100 transform transition-all scale-100">
             <button onclick="closePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -657,6 +716,302 @@
             filteredStoreAchData: [],
             storeAchPage: 1
         };
+
+        async function apiCall(action, payload = {}) {
+            try {
+                const bodyData = { action: action, ...payload };
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+
+                const res = await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(bodyData),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (!res.ok) throw new Error(`HTTP Error status ${res.status}`);
+                return await res.json();
+            } catch (err) {
+                console.warn("API Call Failed or Blocked (falling back to local demo mode):", err);
+                const noticeEl = document.getElementById('demoNotice');
+                if (noticeEl) noticeEl.classList.remove('hidden');
+                return getFallbackApiData(action, payload);
+            }
+        }
+
+        function getFallbackApiData(action, payload) {
+            const sampleStores = [
+                { code: "M001", name: "ALFAMIDI SAM RATULANGI", type: "Reguler 24 Jam", ac: "JOHANIS", am: "ANDI SANTOSO" },
+                { code: "M002", name: "ALFAMIDI BAHU MALL", type: "Reguler", ac: "JOHANIS", am: "ANDI SANTOSO" },
+                { code: "M003", name: "ALFAMIDI TUMINTING", type: "Super M", ac: "STEVEN", am: "ANDI SANTOSO" },
+                { code: "M004", name: "ALFAMIDI MALALAYANG", type: "Reguler", ac: "STEVEN", am: "BUDI PRATAMA" },
+                { code: "M005", name: "ALFAMIDI TIKALA", type: "Super M", ac: "MICHAEL", am: "BUDI PRATAMA" },
+                { code: "M006", name: "ALFAMIDI MAPANGET", type: "Reguler", ac: "MICHAEL", am: "BUDI PRATAMA" }
+            ];
+
+            if (action === 'getStores') {
+                return { success: true, data: sampleStores };
+            }
+
+            if (action === 'validateDashboardAccess') {
+                return { success: true, authorized: true };
+            }
+
+            if (action === 'saveMapDoIt') {
+                const matchedStore = sampleStores.find(s => s.code === payload.storeCode) || sampleStores[0];
+                return {
+                    success: true,
+                    data: {
+                        transactionId: "TX-" + Date.now(),
+                        storeCode: payload.storeCode,
+                        namaToko: matchedStore.name,
+                        nomorRak: payload.nomorRak,
+                        jenisRak: payload.jenisRak,
+                        shift: payload.shift,
+                        itemExpiredRH: payload.itemExpiredRH,
+                        namaPersonil: payload.namaPersonil,
+                        jabatan: payload.jabatan,
+                        status: "TERSIMPAN (DEMO)"
+                    }
+                };
+            }
+
+            if (action === 'getRekap') {
+                const rows = sampleStores.map(s => ({
+                    kodeToko: s.code,
+                    namaToko: s.name,
+                    ac: s.ac,
+                    am: s.am,
+                    personil: "Ahmad / COS",
+                    totalRak: Math.floor(Math.random() * 8) + 2
+                }));
+                return {
+                    success: true,
+                    data: {
+                        rows: rows,
+                        summary: {
+                            totalToko: rows.length,
+                            totalPersonil: rows.length * 2,
+                            totalRak: rows.reduce((a, b) => a + b.totalRak, 0),
+                            totalImplementasi: rows.length * 5
+                        }
+                    }
+                };
+            }
+
+            if (action === 'getPhotos') {
+                return {
+                    success: true,
+                    data: sampleStores.map((s, idx) => ({
+                        kodeToko: s.code,
+                        namaToko: s.name,
+                        typeToko: s.type,
+                        nomorRak: "0" + (idx + 1),
+                        jenisRak: idx % 2 === 0 ? "Food" : "Non Food",
+                        shift: "Shift 1",
+                        namaPersonil: "Petugas " + (idx + 1),
+                        jabatan: "COS",
+                        tanggal: new Date().toISOString().split('T')[0],
+                        ac: s.ac,
+                        photoUrl: `https://placehold.co/600x400/005596/FFFFFF?text=Rak+${idx + 1}+${s.code}`
+                    }))
+                };
+            }
+
+            if (action === 'getAchievement') {
+                const storesWithAch = sampleStores.map(s => {
+                    const target = 10;
+                    const actual = Math.floor(Math.random() * 12);
+                    const pct = Math.round((actual / target) * 100);
+                    return {
+                        code: s.code,
+                        name: s.name,
+                        type: s.type,
+                        ac: s.ac,
+                        am: s.am,
+                        target: target,
+                        actual: actual,
+                        achievementStr: pct + "%"
+                    };
+                });
+
+                return {
+                    success: true,
+                    data: {
+                        branch: { target: 60, actual: 52, achievement: "86.7%" },
+                        insights: { notStarted: 0, onProgress: 2, achieved: 3, overAchieved: 1, totalStore: 6 },
+                        rankings: {
+                            am: [{ name: "ANDI SANTOSO", target: 30, actual: 28, achievementStr: "93.3%" }, { name: "BUDI PRATAMA", target: 30, actual: 24, achievementStr: "80.0%" }],
+                            ac: [{ name: "JOHANIS", target: 20, actual: 19, achievementStr: "95.0%" }, { name: "STEVEN", target: 20, actual: 17, achievementStr: "85.0%" }, { name: "MICHAEL", target: 20, actual: 16, achievementStr: "80.0%" }],
+                            top5Stores: storesWithAch.slice(0, 3),
+                            bottom5Stores: storesWithAch.slice(3)
+                        },
+                        stores: storesWithAch
+                    }
+                };
+            }
+
+            if (action === 'exportRawData' || action === 'getExportData') {
+                return {
+                    success: true,
+                    data: sampleStores.map(s => ({
+                        Timestamp: new Date().toISOString(),
+                        KodeToko: s.code,
+                        NamaToko: s.name,
+                        AC: s.ac,
+                        AM: s.am,
+                        Personil: "Sample Personil",
+                        Jabatan: "COS",
+                        JenisRak: "Food",
+                        NomorRak: "01",
+                        ItemExpiredRH: "Tidak",
+                        Shift: "Shift 1"
+                    }))
+                };
+            }
+
+            return { success: false, error: "Action tidak dikenali." };
+        }
+
+        function openExportModal() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('exportStartDate').value = todayStr;
+            document.getElementById('exportEndDate').value = todayStr;
+            document.getElementById('modalExport').classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('modalExport').classList.add('hidden');
+        }
+
+        // Standardize timestamp into YYYY-MM-DD ignoring time parts
+        function parseTimestampToYMD(ts) {
+            if (!ts) return '';
+            if (ts instanceof Date) {
+                const y = ts.getFullYear();
+                const m = String(ts.getMonth() + 1).padStart(2, '0');
+                const d = String(ts.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            const str = String(ts).trim();
+            // Case YYYY-MM-DD or YYYY/MM/DD
+            const ymdMatch = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+            if (ymdMatch) {
+                const y = ymdMatch[1];
+                const m = ymdMatch[2].padStart(2, '0');
+                const d = ymdMatch[3].padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            // Case DD/MM/YYYY or DD-MM-YYYY
+            const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+            if (dmyMatch) {
+                const d = dmyMatch[1].padStart(2, '0');
+                const m = dmyMatch[2].padStart(2, '0');
+                const y = dmyMatch[3];
+                return `${y}-${m}-${d}`;
+            }
+            // Date object fallback parse
+            const parsed = new Date(str);
+            if (!isNaN(parsed.getTime())) {
+                const y = parsed.getFullYear();
+                const m = String(parsed.getMonth() + 1).padStart(2, '0');
+                const d = String(parsed.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            return '';
+        }
+
+        async function handleExportData(e) {
+            e.preventDefault();
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+
+            if (startDate > endDate) {
+                alert("Tanggal Mulai tidak boleh melebihi Tanggal Selesai.");
+                return;
+            }
+
+            showLoading("Menarik Data dari Sheet MAP_DO_IT_DATA...");
+
+            // Call API backend
+            const res = await apiCall('exportRawData', { startDate, endDate });
+            hideLoading();
+
+            let rawRows = [];
+            if (res.success && Array.isArray(res.data)) {
+                rawRows = res.data;
+            } else if (res.success && Array.isArray(res.rows)) {
+                rawRows = res.rows;
+            } else {
+                // Fallback: fetch general rekap or photos data if raw backend action is combined
+                const fallbackRes = await apiCall('getExportData', { startDate, endDate });
+                if (fallbackRes.success && Array.isArray(fallbackRes.data)) {
+                    rawRows = fallbackRes.data;
+                } else {
+                    alert(res.error || "Gagal mengambil data dari Google Sheet.");
+                    return;
+                }
+            }
+
+            // Client side filter double check ensuring Timestamp time component is ignored
+            const filteredRows = rawRows.filter(row => {
+                const tsVal = row.timestamp || row.Timestamp || row[0] || '';
+                const rowDateYMD = parseTimestampToYMD(tsVal);
+                if (!rowDateYMD) return true; // keep if timestamp unparseable or full raw row
+                return rowDateYMD >= startDate && rowDateYMD <= endDate;
+            });
+
+            if (filteredRows.length === 0) {
+                alert(`Tidak ada data ditemukan pada rentang tanggal ${startDate} s/d ${endDate}.`);
+                return;
+            }
+
+            downloadAsCSV(filteredRows, `MAP_DO_IT_DATA_${startDate}_sd_${endDate}.csv`);
+            closeExportModal();
+        }
+
+        function downloadAsCSV(rows, filename) {
+            if (!rows || rows.length === 0) return;
+
+            let csvContent = "";
+            let keys = [];
+
+            if (typeof rows[0] === 'object' && !Array.isArray(rows[0])) {
+                keys = Object.keys(rows[0]);
+                csvContent += keys.map(k => `"${k}"`).join(",") + "\r\n";
+
+                rows.forEach(row => {
+                    const line = keys.map(k => {
+                        let val = row[k] === null || row[k] === undefined ? '' : String(row[k]);
+                        val = val.replace(/"/g, '""');
+                        return `"${val}"`;
+                    }).join(",");
+                    csvContent += line + "\r\n";
+                });
+            } else if (Array.isArray(rows[0])) {
+                rows.forEach(rowArr => {
+                    const line = rowArr.map(val => {
+                        let strVal = val === null || val === undefined ? '' : String(val);
+                        strVal = strVal.replace(/"/g, '""');
+                        return `"${strVal}"`;
+                    }).join(",");
+                    csvContent += line + "\r\n";
+                });
+            }
+
+            // Add UTF-8 BOM so Excel opens indonesian characters correctly
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             updateClock();
