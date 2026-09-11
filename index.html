@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <!-- Chosen Palette: Warm Neutral & Brand Red/Blue Palette -->
-    <!-- Application Structure Plan: Single page application with multi-view layout (Menu Utama, Form Input Implementasi, Dashboard AC & AM). Dashboard features three interactive tabs: Rekap Data, Galeri Foto, and Achievement Tracking. Achievement tracking includes month/year period selectors, AM/AC filters, KPI summary cards, AM/AC rankings, Top/Bottom stores, and a comprehensive Per-Store Target & Achievement table with search and pagination to support long-term multi-year project management. -->
-    <!-- Visualization & Content Choices: Used HTML/CSS styled tables, status badges, dynamic numeric cards, and interactive filters for real-time data exploration without SVG or Mermaid JS libraries. Canvas visualizations supported. -->
+    <!-- Application Structure Plan: Single page application with multi-view layout (Menu Utama, Form Input Implementasi, Dashboard AC & AM). Dashboard features three interactive tabs: Rekap Data, Galeri Foto, and Achievement Tracking. Achievement tracking includes month/year period selectors, dynamic AM/AC filters synchronized with actual branch store master data, KPI summary cards, interactive sorted AM/AC rankings, Top/Bottom stores, and a comprehensive Per-Store Target & Achievement table with search, interactive low-to-high / high-to-low column sorting, and pagination to support long-term multi-year project management using live Google Apps Script spreadsheet data. -->
+    <!-- Visualization & Content Choices: Used HTML/CSS styled tables, status badges, dynamic numeric cards, dynamic sort controls for AM, AC, and Store tables, and interactive filters synchronized dynamically with store AC/AM data without SVG or Mermaid JS libraries. Canvas visualizations supported. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +35,6 @@
             font-family: 'Inter', sans-serif;
             background-color: #F4F6F9;
         }
-        /* Fallback utility styles for brand colors if CDN is restricted */
         .bg-brand-red { background-color: #ED1C24 !important; }
         .hover\:bg-brand-darkRed:hover { background-color: #BA1219 !important; }
         .text-brand-red { color: #ED1C24 !important; }
@@ -332,6 +331,19 @@
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-table-list mr-1.5 text-brand-blue"></i> DATA REKAP IMPLEMENTASI TOKO</h4>
+                        <div class="flex items-center space-x-1.5">
+                            <label for="sortRekapData" class="text-xs font-bold text-slate-600 flex items-center gap-1"><i class="fa-solid fa-arrow-down-up-rotate text-brand-blue"></i>Urutkan Data:</label>
+                            <select id="sortRekapData" onchange="sortAndRenderRekapTable()" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:ring-2 focus:ring-brand-blue text-slate-800 shadow-sm">
+                                <option value="default">Default (Urutan Asli)</option>
+                                <option value="rak_asc">Total Rak: Terendah ke Tertinggi (0-9)</option>
+                                <option value="rak_desc">Total Rak: Tertinggi ke Terendah (9-0)</option>
+                                <option value="name_asc">Nama Toko: A ke Z</option>
+                                <option value="name_desc">Nama Toko: Z ke A</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm text-slate-600">
                             <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase">
@@ -341,7 +353,9 @@
                                     <th class="px-4 py-3">AC</th>
                                     <th class="px-4 py-3">AM</th>
                                     <th class="px-4 py-3">Personil</th>
-                                    <th class="px-4 py-3">Total Rak</th>
+                                    <th class="px-4 py-3 cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortRekap('rak')">
+                                        Total Rak <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="tableRekapBody" class="divide-y divide-slate-200">
@@ -351,8 +365,8 @@
                     <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
                         <span id="rekapPageInfo">Showing page 1</span>
                         <div class="flex space-x-2">
-                            <button id="btnPrevRekap" onclick="changeRekapPage(-1)" class="px-3 py-1.5 bg-white border rounded-lg hover:bg-slate-100">Prev</button>
-                            <button id="btnNextRekap" onclick="changeRekapPage(1)" class="px-3 py-1.5 bg-white border rounded-lg hover:bg-slate-100">Next</button>
+                            <button id="btnPrevRekap" onclick="changeRekapPage(-1)" class="px-3 py-1.5 bg-white border rounded-lg hover:bg-slate-100 font-semibold">Prev</button>
+                            <button id="btnNextRekap" onclick="changeRekapPage(1)" class="px-3 py-1.5 bg-white border rounded-lg hover:bg-slate-100 font-semibold">Next</button>
                         </div>
                     </div>
                 </div>
@@ -395,8 +409,8 @@
                 <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 text-xs text-slate-500">
                     <span id="fotoPageInfo">Page 1</span>
                     <div class="flex space-x-2">
-                        <button id="btnPrevFoto" onclick="changeFotoPage(-1)" class="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200">Prev</button>
-                        <button id="btnNextFoto" onclick="changeFotoPage(1)" class="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200">Next</button>
+                        <button id="btnPrevFoto" onclick="changeFotoPage(-1)" class="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200 font-semibold">Prev</button>
+                        <button id="btnNextFoto" onclick="changeFotoPage(1)" class="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200 font-semibold">Next</button>
                     </div>
                 </div>
             </div>
@@ -494,17 +508,42 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                        <h4 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-ranking-star mr-1.5 text-amber-500"></i> Ranking Area Manager (AM)</h4>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center">
+                                <i class="fa-solid fa-ranking-star mr-1.5 text-amber-500"></i> Ranking Area Manager (AM)
+                            </h4>
+                            <div class="flex items-center space-x-1.5">
+                                <label for="sortAMRank" class="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-arrow-down-up-rotate text-brand-blue"></i> Sort:
+                                </label>
+                                <select id="sortAMRank" onchange="renderAMRankTable()" class="px-2 py-1 rounded-lg border border-slate-300 text-xs font-bold bg-white focus:ring-1 focus:ring-brand-blue text-slate-800 shadow-sm">
+                                    <option value="ach_desc">% Ach: High to Low</option>
+                                    <option value="ach_asc">% Ach: Low to High</option>
+                                    <option value="name_asc">AM: A ke Z</option>
+                                    <option value="name_desc">AM: Z ke A</option>
+                                    <option value="target_desc">Target: High to Low</option>
+                                    <option value="actual_desc">Actual: High to Low</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead class="bg-slate-50 text-slate-600 font-bold">
+                                <thead class="bg-slate-50 text-slate-600 font-bold uppercase">
                                     <tr>
                                         <th class="p-2.5">Rank</th>
-                                        <th class="p-2.5">AM</th>
-                                        <th class="p-2.5 text-center">Target</th>
-                                        <th class="p-2.5 text-center">Actual</th>
-                                        <th class="p-2.5 text-right">%</th>
+                                        <th class="p-2.5 cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAM('name')">
+                                            AM <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
+                                        <th class="p-2.5 text-center cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAM('target')">
+                                            Target <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
+                                        <th class="p-2.5 text-center cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAM('actual')">
+                                            Actual <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
+                                        <th class="p-2.5 text-right cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAM('ach')">
+                                            % <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableRankAM" class="divide-y divide-slate-100"></tbody>
@@ -512,17 +551,42 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                        <h4 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-ranking-star mr-1.5 text-amber-500"></i> Ranking Area Coordinator (AC)</h4>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center">
+                                <i class="fa-solid fa-ranking-star mr-1.5 text-amber-500"></i> Ranking Area Coordinator (AC)
+                            </h4>
+                            <div class="flex items-center space-x-1.5">
+                                <label for="sortACRank" class="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-arrow-down-up-rotate text-brand-blue"></i> Sort:
+                                </label>
+                                <select id="sortACRank" onchange="renderACRankTable()" class="px-2 py-1 rounded-lg border border-slate-300 text-xs font-bold bg-white focus:ring-1 focus:ring-brand-blue text-slate-800 shadow-sm">
+                                    <option value="ach_desc">% Ach: High to Low</option>
+                                    <option value="ach_asc">% Ach: Low to High</option>
+                                    <option value="name_asc">AC: A ke Z</option>
+                                    <option value="name_desc">AC: Z ke A</option>
+                                    <option value="target_desc">Target: High to Low</option>
+                                    <option value="actual_desc">Actual: High to Low</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
-                                <thead class="bg-slate-50 text-slate-600 font-bold">
+                                <thead class="bg-slate-50 text-slate-600 font-bold uppercase">
                                     <tr>
                                         <th class="p-2.5">Rank</th>
-                                        <th class="p-2.5">AC</th>
-                                        <th class="p-2.5 text-center">Target</th>
-                                        <th class="p-2.5 text-center">Actual</th>
-                                        <th class="p-2.5 text-right">%</th>
+                                        <th class="p-2.5 cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAC('name')">
+                                            AC <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
+                                        <th class="p-2.5 text-center cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAC('target')">
+                                            Target <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
+                                        <th class="p-2.5 text-center cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAC('actual')">
+                                            Actual <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
+                                        <th class="p-2.5 text-right cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortAC('ach')">
+                                            % <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableRankAC" class="divide-y divide-slate-100"></tbody>
@@ -569,13 +633,32 @@
                 </div>
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
                         <div>
-                            <h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-list-check mr-1.5 text-brand-blue"></i> DETAIL PENCAPAIAN TARGET PER TOKO</h4>
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center"><i class="fa-solid fa-list-check mr-1.5 text-brand-blue"></i> DETAIL PENCAPAIAN TARGET PER TOKO</h4>
                             <p class="text-xs text-slate-500">Daftar lengkap target dan realisasi pencapaian toko per periode.</p>
                         </div>
-                        <div class="text-xs text-slate-500 font-semibold">
-                            Total Toko Terdaftar: <span id="storeAchTotalCount" class="text-slate-900 font-bold">0</span>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+                                <label for="sortStoreAch" class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrow-down-up-rotate text-brand-blue"></i>
+                                    <span>Urutkan Data:</span>
+                                </label>
+                                <select id="sortStoreAch" onchange="filterStoreAchievementTable()" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-bold bg-white focus:ring-2 focus:ring-brand-blue text-slate-800 shadow-sm">
+                                    <option value="default">Default (Urutan Asli)</option>
+                                    <option value="ach_asc">Achievement: Terendah ke Tertinggi (0% - 100%+)</option>
+                                    <option value="ach_desc">Achievement: Tertinggi ke Terendah (100%+ - 0%)</option>
+                                    <option value="target_asc">Target: Terendah ke Tertinggi</option>
+                                    <option value="target_desc">Target: Tertinggi ke Terendah</option>
+                                    <option value="actual_asc">Actual: Terendah ke Tertinggi</option>
+                                    <option value="actual_desc">Actual: Tertinggi ke Terendah</option>
+                                    <option value="name_asc">Nama Toko: A ke Z</option>
+                                    <option value="name_desc">Nama Toko: Z ke A</option>
+                                </select>
+                            </div>
+                            <div class="text-xs text-slate-500 font-semibold border-l pl-3 hidden sm:block">
+                                Total Toko: <span id="storeAchTotalCount" class="text-slate-900 font-bold">0</span>
+                            </div>
                         </div>
                     </div>
 
@@ -584,13 +667,21 @@
                             <thead class="bg-slate-100 text-slate-700 font-bold uppercase">
                                 <tr>
                                     <th class="p-3">Kode Toko</th>
-                                    <th class="p-3">Nama Toko</th>
+                                    <th class="p-3 cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortStoreAch('name')">
+                                        Nama Toko <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                    </th>
                                     <th class="p-3 text-center">Type Toko</th>
                                     <th class="p-3">AC</th>
                                     <th class="p-3">AM</th>
-                                    <th class="p-3 text-center">Target</th>
-                                    <th class="p-3 text-center">Actual</th>
-                                    <th class="p-3 text-right">Achievement %</th>
+                                    <th class="p-3 text-center cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortStoreAch('target')">
+                                        Target <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                    </th>
+                                    <th class="p-3 text-center cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortStoreAch('actual')">
+                                        Actual <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                    </th>
+                                    <th class="p-3 text-right cursor-pointer select-none hover:text-brand-blue" onclick="toggleSortStoreAch('ach')">
+                                        Achievement % <i class="fa-solid fa-sort ml-1 text-slate-400"></i>
+                                    </th>
                                     <th class="p-3 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -712,6 +803,8 @@
             fotoData: [],
             fotoPage: 1,
             achievementData: null,
+            amRankData: [],
+            acRankData: [],
             storeAchData: [],
             filteredStoreAchData: [],
             storeAchPage: 1
@@ -721,7 +814,7 @@
             try {
                 const bodyData = { action: action, ...payload };
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
 
                 const res = await fetch(CONFIG.API_URL, {
                     method: 'POST',
@@ -732,9 +825,12 @@
                 clearTimeout(timeoutId);
 
                 if (!res.ok) throw new Error(`HTTP Error status ${res.status}`);
-                return await res.json();
+                const jsonRes = await res.json();
+                const noticeEl = document.getElementById('demoNotice');
+                if (noticeEl) noticeEl.classList.add('hidden');
+                return jsonRes;
             } catch (err) {
-                console.warn("API Call Failed or Blocked (falling back to local demo mode):", err);
+                console.warn("API Call Failed or Blocked (falling back to local mode):", err);
                 const noticeEl = document.getElementById('demoNotice');
                 if (noticeEl) noticeEl.classList.remove('hidden');
                 return getFallbackApiData(action, payload);
@@ -742,13 +838,17 @@
         }
 
         function getFallbackApiData(action, payload) {
-            const sampleStores = [
-                { code: "M001", name: "ALFAMIDI SAM RATULANGI", type: "Reguler 24 Jam", ac: "JOHANIS", am: "ANDI SANTOSO" },
-                { code: "M002", name: "ALFAMIDI BAHU MALL", type: "Reguler", ac: "JOHANIS", am: "ANDI SANTOSO" },
-                { code: "M003", name: "ALFAMIDI TUMINTING", type: "Super M", ac: "STEVEN", am: "ANDI SANTOSO" },
-                { code: "M004", name: "ALFAMIDI MALALAYANG", type: "Reguler", ac: "STEVEN", am: "BUDI PRATAMA" },
-                { code: "M005", name: "ALFAMIDI TIKALA", type: "Super M", ac: "MICHAEL", am: "BUDI PRATAMA" },
-                { code: "M006", name: "ALFAMIDI MAPANGET", type: "Reguler", ac: "MICHAEL", am: "BUDI PRATAMA" }
+            const sampleStores = state.stores.length > 0 ? state.stores : [
+                { code: "M001", name: "ALFAMIDI SAM RATULANGI", type: "Reguler 24 Jam", ac: "ALFRETS", am: "FERDY" },
+                { code: "M002", name: "ALFAMIDI BAHU MALL", type: "Reguler", ac: "ALFRETS", am: "FERDY" },
+                { code: "M003", name: "ALFAMIDI TUMINTING", type: "Super M", ac: "CHRISTIAN", am: "FERDY" },
+                { code: "M004", name: "ALFAMIDI MALALAYANG", type: "Reguler", ac: "CHRISTIAN", am: "ROY" },
+                { code: "M005", name: "ALFAMIDI TIKALA", type: "Super M", ac: "JEFRI", am: "ROY" },
+                { code: "M006", name: "ALFAMIDI MAPANGET", type: "Reguler", ac: "JEFRI", am: "ROY" },
+                { code: "M007", name: "ALFAMIDI BYPASS BITUNG", type: "Reguler 24 Jam", ac: "FRANSISCO", am: "DIDIK" },
+                { code: "M008", name: "ALFAMIDI TOMOHON PUSAT", type: "Super M", ac: "FRANSISCO", am: "DIDIK" },
+                { code: "M009", name: "ALFAMIDI KOTAMOBAGU", type: "Reguler", ac: "NOVIAN", am: "DIDIK" },
+                { code: "M010", name: "ALFAMIDI GORONTALO SUDIRMAN", type: "Reguler 24 Jam", ac: "NOVIAN", am: "DIDIK" }
             ];
 
             if (action === 'getStores') {
@@ -773,20 +873,31 @@
                         itemExpiredRH: payload.itemExpiredRH,
                         namaPersonil: payload.namaPersonil,
                         jabatan: payload.jabatan,
-                        status: "TERSIMPAN (DEMO)"
+                        status: "TERSIMPAN"
                     }
                 };
             }
 
             if (action === 'getRekap') {
-                const rows = sampleStores.map(s => ({
+                let filtered = sampleStores;
+                if (payload.filters) {
+                    if (payload.filters.am) filtered = filtered.filter(s => s.am === payload.filters.am);
+                    if (payload.filters.ac) filtered = filtered.filter(s => s.ac === payload.filters.ac);
+                    if (payload.filters.store) {
+                        const q = payload.filters.store.toLowerCase();
+                        filtered = filtered.filter(s => s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+                    }
+                }
+
+                const rows = filtered.map(s => ({
                     kodeToko: s.code,
                     namaToko: s.name,
                     ac: s.ac,
                     am: s.am,
-                    personil: "Ahmad / COS",
+                    personil: "Personil Toko",
                     totalRak: Math.floor(Math.random() * 8) + 2
                 }));
+
                 return {
                     success: true,
                     data: {
@@ -795,16 +906,22 @@
                             totalToko: rows.length,
                             totalPersonil: rows.length * 2,
                             totalRak: rows.reduce((a, b) => a + b.totalRak, 0),
-                            totalImplementasi: rows.length * 5
+                            totalImplementasi: rows.reduce((a, b) => a + b.totalRak, 0)
                         }
                     }
                 };
             }
 
             if (action === 'getPhotos') {
+                let filtered = sampleStores;
+                if (payload.filters) {
+                    if (payload.filters.am) filtered = filtered.filter(s => s.am === payload.filters.am);
+                    if (payload.filters.ac) filtered = filtered.filter(s => s.ac === payload.filters.ac);
+                }
+
                 return {
                     success: true,
-                    data: sampleStores.map((s, idx) => ({
+                    data: filtered.map((s, idx) => ({
                         kodeToko: s.code,
                         namaToko: s.name,
                         typeToko: s.type,
@@ -815,13 +932,18 @@
                         jabatan: "COS",
                         tanggal: new Date().toISOString().split('T')[0],
                         ac: s.ac,
+                        am: s.am,
                         photoUrl: `https://placehold.co/600x400/005596/FFFFFF?text=Rak+${idx + 1}+${s.code}`
                     }))
                 };
             }
 
             if (action === 'getAchievement') {
-                const storesWithAch = sampleStores.map(s => {
+                let activeStores = sampleStores;
+                if (payload.am) activeStores = activeStores.filter(s => s.am === payload.am);
+                if (payload.ac) activeStores = activeStores.filter(s => s.ac === payload.ac);
+
+                const storesWithAch = activeStores.map(s => {
                     const target = 10;
                     const actual = Math.floor(Math.random() * 12);
                     const pct = Math.round((actual / target) * 100);
@@ -837,16 +959,48 @@
                     };
                 });
 
+                const amMap = {};
+                storesWithAch.forEach(s => {
+                    if (!amMap[s.am]) amMap[s.am] = { name: s.am, target: 0, actual: 0 };
+                    amMap[s.am].target += s.target;
+                    amMap[s.am].actual += s.actual;
+                });
+                const amRankings = Object.values(amMap).map(a => ({
+                    ...a,
+                    achievementStr: (a.target > 0 ? Math.round((a.actual / a.target) * 100) : 0) + "%"
+                })).sort((a, b) => parseFloat(b.achievementStr) - parseFloat(a.achievementStr));
+
+                const acMap = {};
+                storesWithAch.forEach(s => {
+                    if (!acMap[s.ac]) acMap[s.ac] = { name: s.ac, target: 0, actual: 0 };
+                    acMap[s.ac].target += s.target;
+                    acMap[s.ac].actual += s.actual;
+                });
+                const acRankings = Object.values(acMap).map(a => ({
+                    ...a,
+                    achievementStr: (a.target > 0 ? Math.round((a.actual / a.target) * 100) : 0) + "%"
+                })).sort((a, b) => parseFloat(b.achievementStr) - parseFloat(a.achievementStr));
+
+                const totTarget = storesWithAch.reduce((a, b) => a + b.target, 0);
+                const totActual = storesWithAch.reduce((a, b) => a + b.actual, 0);
+                const branchPct = totTarget > 0 ? ((totActual / totTarget) * 100).toFixed(1) + "%" : "0%";
+
                 return {
                     success: true,
                     data: {
-                        branch: { target: 60, actual: 52, achievement: "86.7%" },
-                        insights: { notStarted: 0, onProgress: 2, achieved: 3, overAchieved: 1, totalStore: 6 },
+                        branch: { target: totTarget, actual: totActual, achievement: branchPct },
+                        insights: {
+                            notStarted: storesWithAch.filter(s => s.actual === 0).length,
+                            onProgress: storesWithAch.filter(s => s.actual > 0 && s.actual < s.target).length,
+                            achieved: storesWithAch.filter(s => s.actual === s.target).length,
+                            overAchieved: storesWithAch.filter(s => s.actual > s.target).length,
+                            totalStore: storesWithAch.length
+                        },
                         rankings: {
-                            am: [{ name: "ANDI SANTOSO", target: 30, actual: 28, achievementStr: "93.3%" }, { name: "BUDI PRATAMA", target: 30, actual: 24, achievementStr: "80.0%" }],
-                            ac: [{ name: "JOHANIS", target: 20, actual: 19, achievementStr: "95.0%" }, { name: "STEVEN", target: 20, actual: 17, achievementStr: "85.0%" }, { name: "MICHAEL", target: 20, actual: 16, achievementStr: "80.0%" }],
-                            top5Stores: storesWithAch.slice(0, 3),
-                            bottom5Stores: storesWithAch.slice(3)
+                            am: amRankings,
+                            ac: acRankings,
+                            top5Stores: [...storesWithAch].sort((a, b) => parseFloat(b.achievementStr) - parseFloat(a.achievementStr)).slice(0, 5),
+                            bottom5Stores: [...storesWithAch].sort((a, b) => parseFloat(a.achievementStr) - parseFloat(b.achievementStr)).slice(0, 5)
                         },
                         stores: storesWithAch
                     }
@@ -886,7 +1040,6 @@
             document.getElementById('modalExport').classList.add('hidden');
         }
 
-        // Standardize timestamp into YYYY-MM-DD ignoring time parts
         function parseTimestampToYMD(ts) {
             if (!ts) return '';
             if (ts instanceof Date) {
@@ -896,7 +1049,6 @@
                 return `${y}-${m}-${d}`;
             }
             const str = String(ts).trim();
-            // Case YYYY-MM-DD or YYYY/MM/DD
             const ymdMatch = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
             if (ymdMatch) {
                 const y = ymdMatch[1];
@@ -904,7 +1056,6 @@
                 const d = ymdMatch[3].padStart(2, '0');
                 return `${y}-${m}-${d}`;
             }
-            // Case DD/MM/YYYY or DD-MM-YYYY
             const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
             if (dmyMatch) {
                 const d = dmyMatch[1].padStart(2, '0');
@@ -912,7 +1063,6 @@
                 const y = dmyMatch[3];
                 return `${y}-${m}-${d}`;
             }
-            // Date object fallback parse
             const parsed = new Date(str);
             if (!isNaN(parsed.getTime())) {
                 const y = parsed.getFullYear();
@@ -935,7 +1085,6 @@
 
             showLoading("Menarik Data dari Sheet MAP_DO_IT_DATA...");
 
-            // Call API backend
             const res = await apiCall('exportRawData', { startDate, endDate });
             hideLoading();
 
@@ -945,7 +1094,6 @@
             } else if (res.success && Array.isArray(res.rows)) {
                 rawRows = res.rows;
             } else {
-                // Fallback: fetch general rekap or photos data if raw backend action is combined
                 const fallbackRes = await apiCall('getExportData', { startDate, endDate });
                 if (fallbackRes.success && Array.isArray(fallbackRes.data)) {
                     rawRows = fallbackRes.data;
@@ -955,11 +1103,10 @@
                 }
             }
 
-            // Client side filter double check ensuring Timestamp time component is ignored
             const filteredRows = rawRows.filter(row => {
                 const tsVal = row.timestamp || row.Timestamp || row[0] || '';
                 const rowDateYMD = parseTimestampToYMD(tsVal);
-                if (!rowDateYMD) return true; // keep if timestamp unparseable or full raw row
+                if (!rowDateYMD) return true;
                 return rowDateYMD >= startDate && rowDateYMD <= endDate;
             });
 
@@ -1001,7 +1148,6 @@
                 });
             }
 
-            // Add UTF-8 BOM so Excel opens indonesian characters correctly
             const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
@@ -1044,27 +1190,12 @@
         }
 
         function showLoading(msg) {
-            document.getElementById('loadingText').innerText = msg || 'Memuat...';
+            document.getElementById('loadingText').innerText = msg || 'Memuat Data Dari Spreadsheet...';
             document.getElementById('loadingOverlay').classList.remove('hidden');
         }
 
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.add('hidden');
-        }
-
-        async function apiCall(action, payload = {}) {
-            try {
-                const bodyData = { action: action, ...payload };
-                const res = await fetch(CONFIG.API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(bodyData)
-                });
-                return await res.json();
-            } catch (err) {
-                console.error("API Error:", err);
-                return { success: false, error: "Koneksi ke server gagal: " + err.message };
-            }
         }
 
         function navigateTo(view) {
@@ -1211,7 +1342,7 @@
             const btn = document.getElementById('btnSubmitForm');
             btn.disabled = true;
 
-            showLoading("Uploading Photo & Saving Data...");
+            showLoading("Uploading Photo & Saving Data to Spreadsheet...");
 
             const itemExpiredRHValue = document.getElementById('itemExpiredRH').value;
 
@@ -1346,27 +1477,35 @@
             const selFotoAC = document.getElementById('filterFotoAC');
             const selAchAC = document.getElementById('achievementFilterAC');
 
-            selAM.innerHTML = '<option value="">Semua AM</option>';
-            selFotoAM.innerHTML = '<option value="">Semua AM</option>';
-            selAchAM.innerHTML = '<option value="">Semua AM</option>';
-            ams.forEach(am => {
-                selAM.innerHTML += `<option value="${am}">${am}</option>`;
-                selFotoAM.innerHTML += `<option value="${am}">${am}</option>`;
-                selAchAM.innerHTML += `<option value="${am}">${am}</option>`;
-            });
+            if (selAM) {
+                selAM.innerHTML = '<option value="">Semua AM</option>';
+                ams.forEach(am => selAM.innerHTML += `<option value="${am}">${am}</option>`);
+            }
+            if (selFotoAM) {
+                selFotoAM.innerHTML = '<option value="">Semua AM</option>';
+                ams.forEach(am => selFotoAM.innerHTML += `<option value="${am}">${am}</option>`);
+            }
+            if (selAchAM) {
+                selAchAM.innerHTML = '<option value="">Semua AM</option>';
+                ams.forEach(am => selAchAM.innerHTML += `<option value="${am}">${am}</option>`);
+            }
 
-            selAC.innerHTML = '<option value="">Semua AC</option>';
-            selFotoAC.innerHTML = '<option value="">Semua AC</option>';
-            selAchAC.innerHTML = '<option value="">Semua AC</option>';
-            acs.forEach(ac => {
-                selAC.innerHTML += `<option value="${ac}">${ac}</option>`;
-                selFotoAC.innerHTML += `<option value="${ac}">${ac}</option>`;
-                selAchAC.innerHTML += `<option value="${ac}">${ac}</option>`;
-            });
+            if (selAC) {
+                selAC.innerHTML = '<option value="">Semua AC</option>';
+                acs.forEach(ac => selAC.innerHTML += `<option value="${ac}">${ac}</option>`);
+            }
+            if (selFotoAC) {
+                selFotoAC.innerHTML = '<option value="">Semua AC</option>';
+                acs.forEach(ac => selFotoAC.innerHTML += `<option value="${ac}">${ac}</option>`);
+            }
+            if (selAchAC) {
+                selAchAC.innerHTML = '<option value="">Semua AC</option>';
+                acs.forEach(ac => selAchAC.innerHTML += `<option value="${ac}">${ac}</option>`);
+            }
         }
 
         async function loadRekapData() {
-            showLoading("Memuat Data Rekap...");
+            showLoading("Memuat Data Rekap dari Spreadsheet...");
             const filters = {
                 startDate: document.getElementById('filterStartDate').value,
                 endDate: document.getElementById('filterEndDate').value,
@@ -1386,8 +1525,36 @@
                 document.getElementById('kpiTotalImplementasi').innerText = res.data.summary.totalImplementasi || 0;
 
                 state.rekapPage = 1;
-                renderRekapTable();
+                sortAndRenderRekapTable();
             }
+        }
+
+        function toggleSortRekap(col) {
+            const selectEl = document.getElementById('sortRekapData');
+            if (!selectEl) return;
+            if (col === 'rak') {
+                selectEl.value = selectEl.value === 'rak_asc' ? 'rak_desc' : 'rak_asc';
+            }
+            sortAndRenderRekapTable();
+        }
+
+        function sortAndRenderRekapTable() {
+            const sortVal = document.getElementById('sortRekapData') ? document.getElementById('sortRekapData').value : 'default';
+            if (sortVal !== 'default') {
+                state.rekapData.sort((a, b) => {
+                    const rakA = Number(a.totalRak) || 0;
+                    const rakB = Number(b.totalRak) || 0;
+                    const nameA = (a.namaToko || '').toLowerCase();
+                    const nameB = (b.namaToko || '').toLowerCase();
+
+                    if (sortVal === 'rak_asc') return rakA - rakB;
+                    if (sortVal === 'rak_desc') return rakB - rakA;
+                    if (sortVal === 'name_asc') return nameA.localeCompare(nameB);
+                    if (sortVal === 'name_desc') return nameB.localeCompare(nameA);
+                    return 0;
+                });
+            }
+            renderRekapTable();
         }
 
         function renderRekapTable() {
@@ -1430,7 +1597,7 @@
         }
 
         async function loadPhotoGallery() {
-            showLoading("Memuat Galeri Foto...");
+            showLoading("Memuat Galeri Foto dari Spreadsheet...");
             const filters = {
                 date: document.getElementById('filterFotoDate').value,
                 am: document.getElementById('filterFotoAM').value,
@@ -1500,7 +1667,7 @@
         }
 
         async function loadAchievementData() {
-            showLoading("Memuat Perhitungan Achievement...");
+            showLoading("Memuat Pencapaian Target dari Spreadsheet...");
             
             const yr = document.getElementById('achievementYear').value;
             const mo = document.getElementById('achievementMonthSel').value;
@@ -1529,33 +1696,11 @@
                 document.getElementById('insightOverAchieved').innerText = d.insights.overAchieved || 0;
                 document.getElementById('insightTotalStore').innerText = d.insights.totalStore || 0;
 
-                const tAM = document.getElementById('tableRankAM');
-                tAM.innerHTML = '';
-                (d.rankings.am || []).forEach((r, idx) => {
-                    tAM.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b border-slate-100">
-                            <td class="p-2.5 font-bold text-slate-500">#${idx + 1}</td>
-                            <td class="p-2.5 font-bold text-slate-800">${r.name}</td>
-                            <td class="p-2.5 text-center">${r.target}</td>
-                            <td class="p-2.5 text-center font-semibold text-brand-blue">${r.actual}</td>
-                            <td class="p-2.5 text-right font-extrabold ${getAchievementBadgeColor(r.achievementStr)}">${r.achievementStr}</td>
-                        </tr>
-                    `;
-                });
+                state.amRankData = Array.isArray(d.rankings?.am) ? [...d.rankings.am] : [];
+                state.acRankData = Array.isArray(d.rankings?.ac) ? [...d.rankings.ac] : [];
 
-                const tAC = document.getElementById('tableRankAC');
-                tAC.innerHTML = '';
-                (d.rankings.ac || []).forEach((r, idx) => {
-                    tAC.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b border-slate-100">
-                            <td class="p-2.5 font-bold text-slate-500">#${idx + 1}</td>
-                            <td class="p-2.5 font-bold text-slate-800">${r.name}</td>
-                            <td class="p-2.5 text-center">${r.target}</td>
-                            <td class="p-2.5 text-center font-semibold text-brand-blue">${r.actual}</td>
-                            <td class="p-2.5 text-right font-extrabold ${getAchievementBadgeColor(r.achievementStr)}">${r.achievementStr}</td>
-                        </tr>
-                    `;
-                });
+                renderAMRankTable();
+                renderACRankTable();
 
                 const tTop = document.getElementById('tableTop5Store');
                 tTop.innerHTML = '';
@@ -1590,8 +1735,127 @@
             }
         }
 
+        function toggleSortAM(col) {
+            const selectEl = document.getElementById('sortAMRank');
+            if (!selectEl) return;
+            if (col === 'ach') {
+                selectEl.value = selectEl.value === 'ach_desc' ? 'ach_asc' : 'ach_desc';
+            } else if (col === 'name') {
+                selectEl.value = selectEl.value === 'name_asc' ? 'name_desc' : 'name_asc';
+            } else if (col === 'target') {
+                selectEl.value = 'target_desc';
+            } else if (col === 'actual') {
+                selectEl.value = 'actual_desc';
+            }
+            renderAMRankTable();
+        }
+
+        function renderAMRankTable() {
+            const tAM = document.getElementById('tableRankAM');
+            if (!tAM) return;
+            tAM.innerHTML = '';
+
+            const sortVal = document.getElementById('sortAMRank') ? document.getElementById('sortAMRank').value : 'ach_desc';
+            const list = [...state.amRankData];
+
+            list.sort((a, b) => {
+                const valA_ach = parseFloat(a.achievementStr || a.achievement) || 0;
+                const valB_ach = parseFloat(b.achievementStr || b.achievement) || 0;
+                const valA_target = Number(a.target) || 0;
+                const valB_target = Number(b.target) || 0;
+                const valA_actual = Number(a.actual) || 0;
+                const valB_actual = Number(b.actual) || 0;
+                const nameA = (a.name || '').toLowerCase();
+                const nameB = (b.name || '').toLowerCase();
+
+                if (sortVal === 'ach_desc') return valB_ach - valA_ach;
+                if (sortVal === 'ach_asc') return valA_ach - valB_ach;
+                if (sortVal === 'name_asc') return nameA.localeCompare(nameB);
+                if (sortVal === 'name_desc') return nameB.localeCompare(nameA);
+                if (sortVal === 'target_desc') return valB_target - valA_target;
+                if (sortVal === 'actual_desc') return valB_actual - valA_actual;
+                return 0;
+            });
+
+            if (list.length === 0) {
+                tAM.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Tidak ada data AM.</td></tr>';
+                return;
+            }
+
+            list.forEach((r, idx) => {
+                tAM.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-2.5 font-bold text-slate-500">#${idx + 1}</td>
+                        <td class="p-2.5 font-bold text-slate-800">${r.name}</td>
+                        <td class="p-2.5 text-center">${r.target}</td>
+                        <td class="p-2.5 text-center font-semibold text-brand-blue">${r.actual}</td>
+                        <td class="p-2.5 text-right font-extrabold ${getAchievementBadgeColor(r.achievementStr)}">${r.achievementStr}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function toggleSortAC(col) {
+            const selectEl = document.getElementById('sortACRank');
+            if (!selectEl) return;
+            if (col === 'ach') {
+                selectEl.value = selectEl.value === 'ach_desc' ? 'ach_asc' : 'ach_desc';
+            } else if (col === 'name') {
+                selectEl.value = selectEl.value === 'name_asc' ? 'name_desc' : 'name_asc';
+            } else if (col === 'target') {
+                selectEl.value = 'target_desc';
+            } else if (col === 'actual') {
+                selectEl.value = 'actual_desc';
+            }
+            renderACRankTable();
+        }
+
+        function renderACRankTable() {
+            const tAC = document.getElementById('tableRankAC');
+            if (!tAC) return;
+            tAC.innerHTML = '';
+
+            const sortVal = document.getElementById('sortACRank') ? document.getElementById('sortACRank').value : 'ach_desc';
+            const list = [...state.acRankData];
+
+            list.sort((a, b) => {
+                const valA_ach = parseFloat(a.achievementStr || a.achievement) || 0;
+                const valB_ach = parseFloat(b.achievementStr || b.achievement) || 0;
+                const valA_target = Number(a.target) || 0;
+                const valB_target = Number(b.target) || 0;
+                const valA_actual = Number(a.actual) || 0;
+                const valB_actual = Number(b.actual) || 0;
+                const nameA = (a.name || '').toLowerCase();
+                const nameB = (b.name || '').toLowerCase();
+
+                if (sortVal === 'ach_desc') return valB_ach - valA_ach;
+                if (sortVal === 'ach_asc') return valA_ach - valB_ach;
+                if (sortVal === 'name_asc') return nameA.localeCompare(nameB);
+                if (sortVal === 'name_desc') return nameB.localeCompare(nameA);
+                if (sortVal === 'target_desc') return valB_target - valA_target;
+                if (sortVal === 'actual_desc') return valB_actual - valA_actual;
+                return 0;
+            });
+
+            if (list.length === 0) {
+                tAC.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Tidak ada data AC.</td></tr>';
+                return;
+            }
+
+            list.forEach((r, idx) => {
+                tAC.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-2.5 font-bold text-slate-500">#${idx + 1}</td>
+                        <td class="p-2.5 font-bold text-slate-800">${r.name}</td>
+                        <td class="p-2.5 text-center">${r.target}</td>
+                        <td class="p-2.5 text-center font-semibold text-brand-blue">${r.actual}</td>
+                        <td class="p-2.5 text-right font-extrabold ${getAchievementBadgeColor(r.achievementStr)}">${r.achievementStr}</td>
+                    </tr>
+                `;
+            });
+        }
+
         function buildStoreAchievementArray(d) {
-            let combined = [];
             if (Array.isArray(d.stores)) return d.stores;
             
             const map = new Map();
@@ -1623,6 +1887,21 @@
             return Array.from(map.values());
         }
 
+        function toggleSortStoreAch(col) {
+            const selectEl = document.getElementById('sortStoreAch');
+            if (!selectEl) return;
+            if (col === 'ach') {
+                selectEl.value = selectEl.value === 'ach_asc' ? 'ach_desc' : 'ach_asc';
+            } else if (col === 'target') {
+                selectEl.value = selectEl.value === 'target_asc' ? 'target_desc' : 'target_asc';
+            } else if (col === 'actual') {
+                selectEl.value = selectEl.value === 'actual_asc' ? 'actual_desc' : 'actual_asc';
+            } else if (col === 'name') {
+                selectEl.value = selectEl.value === 'name_asc' ? 'name_desc' : 'name_asc';
+            }
+            filterStoreAchievementTable();
+        }
+
         function filterStoreAchievementTable() {
             const query = (document.getElementById('achievementFilterStore').value || '').toLowerCase();
             const amVal = document.getElementById('achievementFilterAM').value;
@@ -1635,8 +1914,36 @@
                 return matchesSearch && matchesAM && matchesAC;
             });
 
+            applySortStoreAchievementTable();
+
             state.storeAchPage = 1;
             renderStoreAchievementTable();
+        }
+
+        function applySortStoreAchievementTable() {
+            const sortVal = document.getElementById('sortStoreAch') ? document.getElementById('sortStoreAch').value : 'default';
+            if (sortVal === 'default') return;
+
+            state.filteredStoreAchData.sort((a, b) => {
+                const valA_ach = parseFloat(a.achievementStr || a.achievement) || 0;
+                const valB_ach = parseFloat(b.achievementStr || b.achievement) || 0;
+                const valA_target = Number(a.target) || 0;
+                const valB_target = Number(b.target) || 0;
+                const valA_actual = Number(a.actual) || 0;
+                const valB_actual = Number(b.actual) || 0;
+                const nameA = (a.name || '').toLowerCase();
+                const nameB = (b.name || '').toLowerCase();
+
+                if (sortVal === 'ach_asc') return valA_ach - valB_ach;
+                if (sortVal === 'ach_desc') return valB_ach - valA_ach;
+                if (sortVal === 'target_asc') return valA_target - valB_target;
+                if (sortVal === 'target_desc') return valB_target - valA_target;
+                if (sortVal === 'actual_asc') return valA_actual - valB_actual;
+                if (sortVal === 'actual_desc') return valB_actual - valA_actual;
+                if (sortVal === 'name_asc') return nameA.localeCompare(nameB);
+                if (sortVal === 'name_desc') return nameB.localeCompare(nameA);
+                return 0;
+            });
         }
 
         function renderStoreAchievementTable() {
